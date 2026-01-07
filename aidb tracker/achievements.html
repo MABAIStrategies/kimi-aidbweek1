@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Achievements - AI Resolution Tracker</title>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1a4d4d;
+            --secondary: #fafafa;
+            --accent: #d4a574;
+            --success: #68a063;
+            --progress: #4a90a4;
+            --text: #2d3748;
+        }
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #fafafa 0%, #f0f4f8 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        .navigation {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(26, 77, 77, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-name {
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .logout-btn {
+            background: none;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .achievements-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .achievements-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .achievements-subtitle {
+            color: var(--text);
+            opacity: 0.7;
+            font-size: 1.1rem;
+        }
+        
+        .achievement-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--text);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .achievement-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .achievement-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .achievement-card.unlocked {
+            border: 2px solid var(--accent);
+            background: linear-gradient(135deg, white, rgba(212, 165, 116, 0.05));
+        }
+        
+        .achievement-card.locked {
+            opacity: 0.6;
+            background: #f8fafc;
+        }
+        
+        .achievement-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            text-align: center;
+        }
+        
+        .achievement-card.unlocked .achievement-icon {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .achievement-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            text-align: center;
+        }
+        
+        .achievement-description {
+            color: var(--text);
+            opacity: 0.8;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .achievement-progress {
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .achievement-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--progress), var(--success));
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+        
+        .achievement-status {
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .achievement-status.unlocked {
+            color: var(--success);
+        }
+        
+        .achievement-status.locked {
+            color: var(--text);
+            opacity: 0.6;
+        }
+        
+        .achievement-date {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text);
+            opacity: 0.5;
+            margin-top: 0.5rem;
+        }
+        
+        .milestone-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 3rem;
+        }
+        
+        .milestone-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .milestone-timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .milestone-timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary);
+            transform: translateX(-50%);
+        }
+        
+        .milestone-item {
+            position: relative;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .milestone-item:nth-child(odd) {
+            flex-direction: row;
+        }
+        
+        .milestone-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+        
+        .milestone-content {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(26, 77, 77, 0.05);
+            border-radius: 8px;
+            margin: 0 2rem;
+        }
+        
+        .milestone-item.completed .milestone-content {
+            background: rgba(104, 160, 99, 0.1);
+            border-left: 4px solid var(--success);
+        }
+        
+        .milestone-item.current .milestone-content {
+            background: rgba(212, 165, 116, 0.1);
+            border-left: 4px solid var(--accent);
+        }
+        
+        .milestone-marker {
+            position: absolute;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+        
+        .milestone-item.completed .milestone-marker {
+            background: var(--success);
+        }
+        
+        .milestone-item.current .milestone-marker {
+            background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(212, 165, 116, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(212, 165, 116, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(212, 165, 116, 0);
+            }
+        }
+        
+        .milestone-title-text {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .milestone-description {
+            color: var(--text);
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .celebration-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .share-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+        
+        .share-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .share-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .share-btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .achievements-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .milestone-timeline::before {
+                left: 20px;
+            }
+            
+            .milestone-item {
+                flex-direction: row !important;
+            }
+            
+            .milestone-marker {
+                left: 20px;
+            }
+            
+            .milestone-content {
+                margin-left: 3rem;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navigation">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <img src="resources/company-logo-1.png" alt="MAB AI Strategies" style="height: 40px; width: auto; border-radius: 8px;">
+                    <span>AI Resolution Tracker</span>
+                </div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="calendar.html">Calendar</a></li>
+                <li><a href="analytics.html">Analytics</a></li>
+                <li><a href="achievements.html" class="active">Achievements</a></li>
+            </ul>
+            <div class="user-info" id="user-info">
+                <span class="user-name" id="user-name">Loading...</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Header -->
+        <div class="achievements-header">
+            <h1 class="achievements-title">Achievement Gallery</h1>
+            <p class="achievements-subtitle">Celebrate your AI learning milestones</p>
+        </div>
+        
+        <!-- Achievement Stats -->
+        <div class="achievement-stats">
+            <div class="stat-card">
+                <div class="stat-value" id="unlocked-count">1</div>
+                <div class="stat-label">Achievements Unlocked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="completion-percentage">17%</div>
+                <div class="stat-label">Achievement Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="streak-days">1</div>
+                <div class="stat-label">Current Streak</div>
+            </div>
+        </div>
+        
+        <!-- Achievements Grid -->
+        <div class="achievements-grid" id="achievements-grid">
+            <!-- Achievement cards will be populated by JavaScript -->
+        </div>
+        
+        <!-- Milestone Timeline -->
+        <div class="milestone-section">
+            <h3 class="milestone-title">Your AI Journey Timeline</h3>
+            <div class="milestone-timeline" id="milestone-timeline">
+                <!-- Timeline items will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Share Section -->
+        <div class="share-section">
+            <h3 class="share-title">Share Your Achievements</h3>
+            <p style="color: var(--text); opacity: 0.7; margin-bottom: 1.5rem;">
+                Celebrate your progress with the AI community
+            </p>
+            <div class="share-buttons">
+                <button class="share-btn" onclick="shareAchievement('twitter')">🐦 Share on Twitter</button>
+                <button class="share-btn" onclick="shareAchievement('linkedin')">💼 Share on LinkedIn</button>
+                <button class="share-btn" onclick="shareAchievement('copy')">📋 Copy Link</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Celebration Canvas -->
+    <canvas class="celebration-canvas" id="celebration-canvas"></canvas>
+    
+    <!-- JavaScript -->
+    <script>
+        class AchievementManager {
+            constructor() {
+                this.achievements = this.loadAchievements();
+                this.weekends = this.loadWeekends();
+                this.init();
+            }
+            
+            init() {
+                this.renderAchievements();
+                this.renderMilestoneTimeline();
+                this.updateStats();
+                this.initCelebrationCanvas();
+            }
+            
+            loadAchievements() {
+                // Mock achievement data - in real app this would come from localStorage
+                return [
+                    {
+                        id: 'first_complete',
+                        title: 'Getting Started',
+                        description: 'Complete your first weekend',
+                        icon: '🚀',
+                        unlocked: true,
+                        unlockedDate: new Date().toISOString(),
+                        progress: 100,
+                        maxProgress: 1
+                    },
+                    {
+                        id: 'streak_3',
+                        title: 'Momentum Builder',
+                        description: 'Complete 3 weekends in a row',
+                        icon: '🔥',
+                        unlocked: false,
+                        progress: 1,
+                        maxProgress: 3
+                    },
+                    {
+                        id: 'halfway',
+                        title: 'Halfway Hero',
+                        description: 'Complete 5 weekends',
+                        icon: '⭐',
+                        unlocked: false,
+                        progress: 1,
+                        maxProgress: 5
+                    },
+                    {
+                        id: 'perfect_streak',
+                        title: 'Perfect Attendance',
+                        description: 'Complete all 10 weekends',
+                        icon: '🏆',
+                        unlocked: false,
+                        progress: 1,
+                        maxProgress: 10
+                    },
+                    {
+                        id: 'speed_demon',
+                        title: 'Speed Demon',
+                        description: 'Complete a weekend in under 2 hours',
+                        icon: '⚡',
+                        unlocked: false,
+                        progress: 0,
+                        maxProgress: 1
+                    },
+                    {
+                        id: 'reflective',
+                        title: 'Deep Thinker',
+                        description: 'Add notes to 5 weekends',
+                        icon: '🧠',
+                        unlocked: false,
+                        progress: 1,
+                        maxProgress: 5
+                    }
+                ];
+            }
+            
+            loadWeekends() {
+                // Mock weekend data
+                return [
+                    { id: 1, title: "Resolution Tracker", status: "completed", completedDate: new Date().toISOString() },
+                    { id: 2, title: "AI Writing Assistant", status: "not_started" },
+                    { id: 3, title: "Data Analysis Dashboard", status: "not_started" },
+                    { id: 4, title: "Image Generation Tool", status: "not_started" },
+                    { id: 5, title: "Voice Processing App", status: "not_started" },
+                    { id: 6, title: "Automation Workflow", status: "not_started" },
+                    { id: 7, title: "Learning Management System", status: "not_started" },
+                    { id: 8, title: "Financial Analysis Tool", status: "not_started" },
+                    { id: 9, title: "Creative Content Generator", status: "not_started" },
+                    { id: 10, title: "Personal AI Assistant", status: "not_started" }
+                ];
+            }
+            
+            renderAchievements() {
+                const grid = document.getElementById('achievements-grid');
+                
+                grid.innerHTML = this.achievements.map(achievement => `
+                    <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}" 
+                         onclick="showAchievementDetails('${achievement.id}')">
+                        <span class="achievement-icon">${achievement.icon}</span>
+                        <h3 class="achievement-title">${achievement.title}</h3>
+                        <p class="achievement-description">${achievement.description}</p>
+                        
+                        ${!achievement.unlocked ? `
+                            <div class="achievement-progress">
+                                <div class="achievement-progress-fill" style="width: ${(achievement.progress / achievement.maxProgress) * 100}%"></div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="achievement-status ${achievement.unlocked ? 'unlocked' : 'locked'}">
+                            ${achievement.unlocked ? '✅ Unlocked' : `Progress: ${achievement.progress}/${achievement.maxProgress}`}
+                        </div>
+                        
+                        ${achievement.unlocked && achievement.unlockedDate ? `
+                            <div class="achievement-date">
+                                Unlocked: ${new Date(achievement.unlockedDate).toLocaleDateString()}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+                
+                // Animate achievement cards
+                anime({
+                    targets: '.achievement-card',
+                    translateY: [50, 0],
+                    opacity: [0, 1],
+                    delay: anime.stagger(100),
+                    duration: 800,
+                    easing: 'easeOutExpo'
+                });
+            }
+            
+            renderMilestoneTimeline() {
+                const timeline = document.getElementById('milestone-timeline');
+                const completedCount = this.weekends.filter(w => w.status === 'completed').length;
+                
+                const milestones = [
+                    { title: "First Steps", description: "Complete your first weekend", week: 1 },
+                    { title: "Building Momentum", description: "Complete 3 weekends", week: 3 },
+                    { title: "Halfway Point", description: "Complete 5 weekends", week: 5 },
+                    { title: "Final Stretch", description: "Complete 8 weekends", week: 8 },
+                    { title: "AI Master", description: "Complete all 10 weekends", week: 10 }
+                ];
+                
+                timeline.innerHTML = milestones.map((milestone, index) => {
+                    const isCompleted = completedCount >= milestone.week;
+                    const isCurrent = !isCompleted && completedCount >= milestone.week - 1;
+                    const statusClass = isCompleted ? 'completed' : (isCurrent ? 'current' : '');
+                    
+                    return `
+                        <div class="milestone-item ${statusClass}">
+                            <div class="milestone-content">
+                                <h4 class="milestone-title-text">${milestone.title}</h4>
+                                <p class="milestone-description">${milestone.description}</p>
+                            </div>
+                            <div class="milestone-marker"></div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Animate timeline
+                anime({
+                    targets: '.milestone-item',
+                    translateX: [50, 0],
+                    opacity: [0, 1],
+                    delay: anime.stagger(200),
+                    duration: 800,
+                    easing: 'easeOutExpo'
+                });
+            }
+            
+            updateStats() {
+                const unlockedCount = this.achievements.filter(a => a.unlocked).length;
+                const totalCount = this.achievements.length;
+                const completionPercentage = Math.round((unlockedCount / totalCount) * 100);
+                const currentStreak = this.calculateCurrentStreak();
+                
+                document.getElementById('unlocked-count').textContent = unlockedCount;
+                document.getElementById('completion-percentage').textContent = completionPercentage + '%';
+                document.getElementById('streak-days').textContent = currentStreak;
+                
+                // Animate stats
+                anime({
+                    targets: '.stat-value',
+                    scale: [1, 1.1, 1],
+                    duration: 600,
+                    delay: anime.stagger(100),
+                    easing: 'easeInOutQuad'
+                });
+            }
+            
+            calculateCurrentStreak() {
+                let streak = 0;
+                for (let i = 0; i < this.weekends.length; i++) {
+                    if (this.weekends[i].status === 'completed') {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+                return streak;
+            }
+            
+            initCelebrationCanvas() {
+                const canvas = document.getElementById('celebration-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                
+                // Confetti particles for celebrations
+                this.confetti = [];
+                this.animationId = null;
+            }
+            
+            triggerCelebration() {
+                // Create confetti particles
+                for (let i = 0; i < 50; i++) {
+                    this.confetti.push({
+                        x: Math.random() * window.innerWidth,
+                        y: -10,
+                        vx: (Math.random() - 0.5) * 4,
+                        vy: Math.random() * 3 + 2,
+                        color: this.getRandomColor(),
+                        size: Math.random() * 8 + 4,
+                        rotation: Math.random() * 360,
+                        rotationSpeed: (Math.random() - 0.5) * 10
+                    });
+                }
+                
+                this.animateConfetti();
+            }
+            
+            animateConfetti() {
+                const canvas = document.getElementById('celebration-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                this.confetti = this.confetti.filter(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.1; // gravity
+                    particle.rotation += particle.rotationSpeed;
+                    
+                    // Draw particle
+                    ctx.save();
+                    ctx.translate(particle.x, particle.y);
+                    ctx.rotate(particle.rotation * Math.PI / 180);
+                    ctx.fillStyle = particle.color;
+                    ctx.fillRect(-particle.size/2, -particle.size/2, particle.size, particle.size);
+                    ctx.restore();
+                    
+                    // Remove particle if off screen
+                    return particle.y < canvas.height + 10;
+                });
+                
+                if (this.confetti.length > 0) {
+                    this.animationId = requestAnimationFrame(() => this.animateConfetti());
+                } else {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+            
+            getRandomColor() {
+                const colors = ['#1a4d4d', '#d4a574', '#68a063', '#4a90a4'];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            showAchievementDetails(achievementId) {
+                const achievement = this.achievements.find(a => a.id === achievementId);
+                if (achievement) {
+                    if (achievement.unlocked) {
+                        this.triggerCelebration();
+                        alert(`🏆 ${achievement.title}\n\n${achievement.description}\n\nUnlocked: ${new Date(achievement.unlockedDate).toLocaleDateString()}`);
+                    } else {
+                        alert(`🔒 ${achievement.title}\n\n${achievement.description}\n\nProgress: ${achievement.progress}/${achievement.maxProgress}`);
+                    }
+                }
+            }
+        }
+        
+        // Global functions
+        function showAchievementDetails(achievementId) {
+            window.achievementManager.showAchievementDetails(achievementId);
+        }
+        
+        function shareAchievement(platform) {
+            const unlockedCount = window.achievementManager.achievements.filter(a => a.unlocked).length;
+            const message = `🚀 Just unlocked ${unlockedCount} achievements in my AI Resolution journey! Building an AI-powered future, one weekend at a time. #AIResolution #10WeekChallenge`;
+            
+            switch(platform) {
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
+                    break;
+                case 'linkedin':
+                    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank');
+                    break;
+                case 'copy':
+                    navigator.clipboard.writeText(message).then(() => {
+                        alert('Message copied to clipboard!');
+                    });
+                    break;
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.achievementManager = new AchievementManager();
+            
+            // Handle window resize for celebration canvas
+            window.addEventListener('resize', () => {
+                const canvas = document.getElementById('celebration-canvas');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+            
+            // Display user info if logged in
+            const user = JSON.parse(localStorage.getItem('ai-resolution-user') || '{}');
+            if (user && user.name) {
+                const userNameEl = document.getElementById('user-name');
+                if (userNameEl) {
+                    userNameEl.textContent = user.name || user.username;
+                }
+            } else {
+                // Redirect to login if not authenticated
+                window.location.href = 'login.html';
+            }
+        });
+        
+        // Global logout function
+        function logout() {
+            localStorage.removeItem('ai-resolution-user');
+            window.location.href = 'login.html';
+        }ekend at a time. #AIResolution #10WeekChallenge`;
+            
+            switch(platform) {
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
+                    break;
+                case 'linkedin':
+                    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank');
+                    break;
+                case 'copy':
+                    navigator.clipboard.writeText(message).then(() => {
+                        alert('Message copied to clipboard!');
+                    });
+                    break;
+            }
+        }
+        
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            window.achievementManager = new AchievementManager();
+            
+            // Handle window resize for celebration canvas
+            window.addEventListener('resize', () => {
+                const canvas = document.getElementById('celebration-canvas');
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        });
+    </script>
+</body>
+</html>

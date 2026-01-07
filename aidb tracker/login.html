@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Resolution Tracker</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #1a4d4d;
+            --secondary: #fafafa;
+            --accent: #d4a574;
+            --success: #68a063;
+            --progress: #4a90a4;
+            --text: #2d3748;
+        }
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #fafafa 0%, #f0f4f8 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-top: 4rem;
+        }
+        
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(26, 77, 77, 0.1);
+        }
+        
+        .login-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .login-btn:hover {
+            background: var(--accent);
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .company-logo {
+            width: 250px;
+            height: auto;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .company-logo img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .success-message {
+            background: rgba(104, 160, 99, 0.1);
+            color: var(--success);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-container">
+            <div class="company-logo">
+                <img src="resources/company-logo-1.png" alt="MAB AI Strategies">
+            </div>
+        </div>
+        
+        <div class="login-card">
+            <h2 class="login-title">AI Resolution Tracker</h2>
+            
+            <div class="error-message" id="error-message"></div>
+            <div class="success-message" id="success-message"></div>
+            
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="username">Username or Email</label>
+                    <input type="text" id="username" class="form-input" placeholder="Enter your username or email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Enter your password" required>
+                </div>
+                
+                <button type="submit" class="login-btn">Sign In</button>
+            </form>
+            
+            <div class="login-footer">
+                <p>Don't have an account? <a href="#" onclick="showComingSoon()" style="color: var(--primary);">Sign up here</a></p>
+                <p><a href="#" onclick="showComingSoon()" style="color: var(--primary);">Forgot password?</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class AuthManager {
+            constructor() {
+                this.currentUser = null;
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.checkExistingSession();
+            }
+            
+            setupEventListeners() {
+                document.getElementById('login-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+            }
+            
+            checkExistingSession() {
+                const savedUser = localStorage.getItem('ai-resolution-user');
+                if (savedUser) {
+                    this.currentUser = JSON.parse(savedUser);
+                    // Auto-redirect if already logged in
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
+            }
+            
+            handleLogin() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                // Simple demo authentication - in production, this would call an API
+                if (username && password) {
+                    // Create user object
+                    const user = {
+                        id: Date.now().toString(),
+                        username: username,
+                        email: username.includes('@') ? username : `${username}@example.com`,
+                        loginDate: new Date().toISOString(),
+                        name: username.split('@')[0] || username
+                    };
+                    
+                    this.currentUser = user;
+                    localStorage.setItem('ai-resolution-user', JSON.stringify(user));
+                    
+                    this.showSuccess('Login successful! Redirecting...');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1500);
+                } else {
+                    this.showError('Please enter both username and password');
+                }
+            }
+            
+            logout() {
+                localStorage.removeItem('ai-resolution-user');
+                this.currentUser = null;
+                window.location.href = 'login.html';
+            }
+            
+            getCurrentUser() {
+                return this.currentUser;
+            }
+            
+            showError(message) {
+                const errorEl = document.getElementById('error-message');
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                
+                setTimeout(() => {
+                    errorEl.style.display = 'none';
+                }, 5000);
+            }
+            
+            showSuccess(message) {
+                const successEl = document.getElementById('success-message');
+                successEl.textContent = message;
+                successEl.style.display = 'block';
+            }
+        }
+        
+        function showComingSoon() {
+            alert('Coming soon! This feature is being developed.');
+        }
+        
+        // Initialize auth manager
+        document.addEventListener('DOMContentLoaded', () => {
+            window.authManager = new AuthManager();
+        });
+    </script>
+</body>
+</html>
