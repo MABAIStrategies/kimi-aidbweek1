@@ -662,50 +662,61 @@ class AIResolutionTracker {
             weekends: this.weekends,
             achievements: this.achievements,
             settings: this.settings,
-            user: this.user,
             lastUpdated: new Date().toISOString()
         };
-        
-        localStorage.setItem('ai-resolution-tracker', JSON.stringify(data));
-        
-        // Also save to a backup key for data persistence
-        localStorage.setItem('ai-resolution-backup', JSON.stringify(data));
+
+        // Use auth system to save user-specific data
+        if (window.authSystem && window.authSystem.isAuthenticated()) {
+            window.authSystem.saveUserData(data, 'tracker');
+        } else {
+            // Fallback for non-authenticated users (shouldn't happen in normal flow)
+            localStorage.setItem('ai-resolution-tracker', JSON.stringify(data));
+            localStorage.setItem('ai-resolution-backup', JSON.stringify(data));
+        }
     }
 
     loadData() {
-        const saved = localStorage.getItem('ai-resolution-tracker');
-        const backup = localStorage.getItem('ai-resolution-backup');
-        
         let data = null;
-        
-        if (saved) {
-            try {
-                data = JSON.parse(saved);
-            } catch (e) {
-                console.warn('Could not parse main data, trying backup...');
+
+        // Try to load user-specific data first
+        if (window.authSystem && window.authSystem.isAuthenticated()) {
+            data = window.authSystem.loadUserData('tracker');
+        } else {
+            // Fallback: try loading old format data
+            const saved = localStorage.getItem('ai-resolution-tracker');
+            const backup = localStorage.getItem('ai-resolution-backup');
+
+            if (saved) {
+                try {
+                    data = JSON.parse(saved);
+                } catch (e) {
+                    console.warn('Could not parse main data, trying backup...');
+                }
+            }
+
+            if (!data && backup) {
+                try {
+                    data = JSON.parse(backup);
+                    console.log('Loaded from backup');
+                } catch (e) {
+                    console.warn('Could not parse backup data either');
+                }
             }
         }
-        
-        if (!data && backup) {
-            try {
-                data = JSON.parse(backup);
-                console.log('Loaded from backup');
-            } catch (e) {
-                console.warn('Could not parse backup data either');
-            }
-        }
-        
+
         if (data) {
             this.weekends = data.weekends || this.weekends;
             this.achievements = data.achievements || this.achievements;
             this.settings = data.settings || this.settings;
-            this.user = data.user || this.user;
         }
     }
-    
+
     loadUser() {
-        const savedUser = localStorage.getItem('ai-resolution-user');
-        return savedUser ? JSON.parse(savedUser) : null;
+        // Use auth system to get current user
+        if (window.authSystem) {
+            return window.authSystem.getCurrentUser();
+        }
+        return null;
     }
 
     loadSettings() {
@@ -720,29 +731,24 @@ class AIResolutionTracker {
 // Initialize the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.aiTracker = new AIResolutionTracker();
-    
-    // Display user info if logged in
-    const user = window.aiTracker.user;
-    if (user) {
-        const userNameEl = document.getElementById('user-name');
-        if (userNameEl) {
-            userNameEl.textContent = user.name || user.username;
-        }
-    } else {
-        // Redirect to login if not authenticated
-        window.location.href = 'login.html';
-    }
 });
 
-// Global logout function
-function logout() {
+// Called by auth-ui.js when auth state changes
+function onAuthStateChange(user) {
+    if (window.aiTracker) {
+        window.aiTracker.user = user;
+        window.aiTracker.loadData();
+        window.aiTracker.renderWeekends();
+        window.aiTracker.updateStats();
+    }
+}
+
+// Called by auth-ui.js before logout
+function beforeLogout() {
     if (window.aiTracker) {
         // Save data before logout
         window.aiTracker.saveData();
     }
-    
-    localStorage.removeItem('ai-resolution-user');
-    window.location.href = 'login.html';
 }
 
 // Utility functions for other pages

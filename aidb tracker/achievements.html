@@ -535,7 +535,11 @@
     
     <!-- Celebration Canvas -->
     <canvas class="celebration-canvas" id="celebration-canvas"></canvas>
-    
+
+    <!-- Authentication System -->
+    <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
+
     <!-- JavaScript -->
     <script>
         class AchievementManager {
@@ -826,51 +830,6 @@
         function shareAchievement(platform) {
             const unlockedCount = window.achievementManager.achievements.filter(a => a.unlocked).length;
             const message = `🚀 Just unlocked ${unlockedCount} achievements in my AI Resolution journey! Building an AI-powered future, one weekend at a time. #AIResolution #10WeekChallenge`;
-            
-            switch(platform) {
-                case 'twitter':
-                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}`, '_blank');
-                    break;
-                case 'linkedin':
-                    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`, '_blank');
-                    break;
-                case 'copy':
-                    navigator.clipboard.writeText(message).then(() => {
-                        alert('Message copied to clipboard!');
-                    });
-                    break;
-            }
-        }
-        
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            window.achievementManager = new AchievementManager();
-            
-            // Handle window resize for celebration canvas
-            window.addEventListener('resize', () => {
-                const canvas = document.getElementById('celebration-canvas');
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            });
-            
-            // Display user info if logged in
-            const user = JSON.parse(localStorage.getItem('ai-resolution-user') || '{}');
-            if (user && user.name) {
-                const userNameEl = document.getElementById('user-name');
-                if (userNameEl) {
-                    userNameEl.textContent = user.name || user.username;
-                }
-            } else {
-                // Redirect to login if not authenticated
-                window.location.href = 'login.html';
-            }
-        });
-        
-        // Global logout function
-        function logout() {
-            localStorage.removeItem('ai-resolution-user');
-            window.location.href = 'login.html';
-        }ekend at a time. #AIResolution #10WeekChallenge`;
             
             switch(platform) {
                 case 'twitter':
