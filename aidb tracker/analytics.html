@@ -499,7 +499,11 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Authentication System -->
+    <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
+
     <!-- JavaScript -->
     <script>
         class AnalyticsManager {
@@ -961,25 +965,7 @@
                     chart.resize();
                 });
             });
-            
-            // Display user info if logged in
-            const user = JSON.parse(localStorage.getItem('ai-resolution-user') || '{}');
-            if (user && user.name) {
-                const userNameEl = document.getElementById('user-name');
-                if (userNameEl) {
-                    userNameEl.textContent = user.name || user.username;
-                }
-            } else {
-                // Redirect to login if not authenticated
-                window.location.href = 'login.html';
-            }
         });
-        
-        // Global logout function
-        function logout() {
-            localStorage.removeItem('ai-resolution-user');
-            window.location.href = 'login.html';
-        }
     </script>
 </body>
 </html>

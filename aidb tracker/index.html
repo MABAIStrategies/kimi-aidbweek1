@@ -642,10 +642,57 @@
             <!-- Modal content will be populated by JavaScript -->
         </div>
     </div>
-    
+
+    <!-- Login/Signup Modal -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h2 id="auth-modal-title">Sign In</h2>
+                <button class="modal-close" onclick="closeAuthModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="auth-error" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; display: none;"></div>
+                <div id="auth-success" style="background: rgba(104, 160, 99, 0.1); color: #68a063; padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; display: none;"></div>
+
+                <form id="auth-form">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--primary); margin-bottom: 0.5rem;">Username</label>
+                        <input type="text" id="auth-username" required
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit;">
+                    </div>
+                    <div class="form-group" id="auth-email-group" style="margin-bottom: 1.5rem; display: none;">
+                        <label style="display: block; font-weight: 500; color: var(--primary); margin-bottom: 0.5rem;">Email (optional)</label>
+                        <input type="email" id="auth-email"
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-weight: 500; color: var(--primary); margin-bottom: 0.5rem;">Password</label>
+                        <input type="password" id="auth-password" required
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit;">
+                    </div>
+                    <button type="submit" id="auth-submit-btn"
+                            style="width: 100%; background: var(--primary); color: white; border: none; padding: 0.75rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.3s ease;">
+                        Sign In
+                    </button>
+                </form>
+
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <p id="auth-switch-text" style="color: var(--text); opacity: 0.7;">
+                        Don't have an account?
+                        <a href="#" id="auth-switch-link" style="color: var(--primary); font-weight: 500;">Sign up here</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication System -->
+    <script src="auth.js"></script>
+    <script src="auth-ui.js"></script>
+
     <!-- Main JavaScript -->
     <script src="main.js"></script>
-    
+
     <!-- Initialize page-specific features -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
